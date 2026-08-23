@@ -29,7 +29,7 @@ fn main() {
     // let app = SimpleRemoteServer;
     // let window_options = NativeOptions::default();
     // run_native("SimpleRemote Server", window_options, Box::new(app));
-    core_loop();
+    print_command_examples();
 }
 
 fn core_loop() {

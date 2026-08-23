@@ -1,9 +1,13 @@
+import 'package:client/models/remote_command.dart';
+import 'package:client/services/udp_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class TrackpadWidget extends StatefulWidget {
-  const TrackpadWidget({super.key});
+  final UdpService udpService;
+
+  const TrackpadWidget({super.key, required this.udpService});
 
   @override
   State<StatefulWidget> createState() => _TrackpadWidgetState();
@@ -28,12 +32,14 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
         debugPrint('Delta movement: dx=$dx, dy=$dy');
 
         // TODO: Do the necessary calculations and send the appropriate command to the server
+        final RemoteCommand command = MouseMoveCommand(dx: dx, dy: dy);
+        widget.udpService.sendRemoteCommand(command);
       },
       child: Container(
         width: 300,
         height: 300,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: Colors.grey[850],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.blueAccent, width: 2),
         ),
