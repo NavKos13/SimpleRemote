@@ -7,44 +7,32 @@ use std::{
     thread,
 };
 
-use eframe::{App, NativeOptions, egui::CentralPanel, run_native};
-
 use serde::{Deserialize, Serialize};
 
-use server::executor::*;
-use server::protocol::*;
+pub mod executor;
+pub mod protocol;
+pub mod ui;
 
-
-
-
+use executor::InputExecutor;
+use protocol::{RemoteCommand, print_command_examples};
 
 const SERVER_IP: &str = "0.0.0.0:8080";
 const SERVER_PORT: u16 = 8080;
-
-struct SimpleRemoteServer;
-
-impl App for SimpleRemoteServer {
-    fn ui(&mut self, ui: &mut eframe::egui::Ui, frame: &mut eframe::Frame) {
-        CentralPanel::default().show(ui, |ui| {
-            ui.heading("Hello from SimpleRemote Server!");
-        });
-    }
-}
 
 fn main() {
     // let app = SimpleRemoteServer;
     // let window_options = NativeOptions::default();
     // run_native("SimpleRemote Server", window_options, Box::new(app));
-    print_command_examples();
+    protocol::print_command_examples();
     core_loop();
 }
 
 fn core_loop() {
-    print_command_examples();
     enigo::set_dpi_awareness().unwrap();
 
-    let mut executor = InputExecutor::new();
+    let mut executor = executor::InputExecutor::new();
 
+    // TCP THREAD
     let (tx, rx) = mpsc::channel();
     let tcp_tx = tx.clone();
 
@@ -79,7 +67,7 @@ fn core_loop() {
 
                         println!("{line}");
 
-                        if let Ok(cmd) = serde_json::from_str::<RemoteCommand>(message) {
+                        if let Ok(cmd) = serde_json::from_str::<protocol::RemoteCommand>(message) {
                             let _ = tcp_tx.send(cmd);
                         }
                     }
@@ -92,9 +80,10 @@ fn core_loop() {
         }
     });
 
+    // UDP THREAD
     let udp_tx = tx.clone();
     let udp_handle = thread::spawn(move || {
-        let socket = UdpSocket::bind(&SERVER_IP).expect("Failed to bind to address.");
+        let socket = UdpSocket::bind(SERVER_IP).expect("Failed to bind to address.");
         println!(
             "UDP socket listening on {}",
             &socket.local_addr().unwrap().to_string()
@@ -107,7 +96,7 @@ fn core_loop() {
                 Ok((num_of_bytes, src_address)) => {
                     if let Ok(message) = std::str::from_utf8(&buf[..num_of_bytes]) {
                         println!("{message}");
-                        match serde_json::from_str::<RemoteCommand>(message) {
+                        match serde_json::from_str::<protocol::RemoteCommand>(message) {
                             Ok(command) => udp_tx.send(command).unwrap_or_else(|err| {
                                 eprintln!("Could not send command to main thread.");
                             }),
@@ -126,7 +115,6 @@ fn core_loop() {
     });
 
     println!("Server listening for commands...");
-
     for command in rx {
         executor.execute(command);
     }
