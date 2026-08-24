@@ -2,7 +2,7 @@
 use enigo::*;
 use std::{
     io::{BufRead, BufReader, Error, Read},
-    net::{TcpListener, TcpStream, UdpSocket},
+    net::{SocketAddr, TcpListener, TcpStream, UdpSocket},
     sync::mpsc,
     thread,
 };
@@ -11,9 +11,15 @@ use eframe::{App, NativeOptions, egui::CentralPanel, run_native};
 
 use serde::{Deserialize, Serialize};
 
-use server::examples_for_learning::*;
 use server::executor::*;
 use server::protocol::*;
+
+
+
+
+
+const SERVER_IP: &str = "0.0.0.0:8080";
+const SERVER_PORT: u16 = 8080;
 
 struct SimpleRemoteServer;
 
@@ -30,6 +36,7 @@ fn main() {
     // let window_options = NativeOptions::default();
     // run_native("SimpleRemote Server", window_options, Box::new(app));
     print_command_examples();
+    core_loop();
 }
 
 fn core_loop() {
@@ -87,8 +94,11 @@ fn core_loop() {
 
     let udp_tx = tx.clone();
     let udp_handle = thread::spawn(move || {
-        let socket = UdpSocket::bind("127.0.0.1:8080").expect("Failed to bind to address.");
-        println!("UDP socket listening on 127.0.0.1:8080");
+        let socket = UdpSocket::bind(&SERVER_IP).expect("Failed to bind to address.");
+        println!(
+            "UDP socket listening on {}",
+            &socket.local_addr().unwrap().to_string()
+        );
 
         let mut buf = [0; 1024];
 
