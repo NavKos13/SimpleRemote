@@ -67,7 +67,7 @@
   },
   {
     "label": "Start Client",
-    "command": "cd client; flutter run;",
+    "command": "cd client; flutter run --verbose;",
     "use_new_terminal": true,
     "allow_concurrent_runs": true,
   },

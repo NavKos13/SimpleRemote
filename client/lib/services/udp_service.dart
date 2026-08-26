@@ -19,6 +19,6 @@ class UdpService {
   }
 
   void dispose() {
-    _socket?.close;
+    _socket?.close();
   }
 }

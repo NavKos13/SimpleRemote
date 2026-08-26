@@ -6,8 +6,13 @@ import 'package:flutter/material.dart';
 
 class TrackpadWidget extends StatefulWidget {
   final UdpService udpService;
+  final double sensitivity;
 
-  const TrackpadWidget({super.key, required this.udpService});
+  TrackpadWidget({
+    super.key,
+    required this.udpService,
+    required this.sensitivity,
+  });
 
   @override
   State<StatefulWidget> createState() => _TrackpadWidgetState();
@@ -22,16 +27,12 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
         // 1. Log or track the starting position
         debugPrint('Pan started at local: ${details.localPosition}');
         debugPrint('Pan started at global: ${details.globalPosition}');
-
-        // TODO 2. Initialize tracking variables or gesture state if needed
-        // (e.g., ressetting momentum timers or flagging an active drag)
       },
       onPanUpdate: (DragUpdateDetails details) {
-        final double dx = details.delta.dx;
-        final double dy = details.delta.dy;
+        final double dx = details.delta.dx * widget.sensitivity;
+        final double dy = details.delta.dy * widget.sensitivity;
         debugPrint('Delta movement: dx=$dx, dy=$dy');
 
-        // TODO: Do the necessary calculations and send the appropriate command to the server
         final RemoteCommand command = MouseMoveCommand(dx: dx, dy: dy);
         widget.udpService.sendRemoteCommand(command);
       },
@@ -44,6 +45,27 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
           border: Border.all(color: Colors.blueAccent, width: 2),
         ),
       ),
+    );
+  }
+}
+
+class SensitivitySlider extends StatelessWidget {
+  final double currentValue;
+  final ValueChanged<double> onChanged;
+
+  const SensitivitySlider({
+    super.key,
+    required this.currentValue,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Slider(
+      value: currentValue,
+      min: 1.0,
+      max: 10.0,
+      onChanged: onChanged,
     );
   }
 }
