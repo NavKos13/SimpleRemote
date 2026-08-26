@@ -1,5 +1,5 @@
-use enigo::*;
 use crate::protocol::*;
+use enigo::*;
 
 pub struct InputExecutor {
     enigo: Enigo,
@@ -29,5 +29,11 @@ impl InputExecutor {
                     .unwrap_or_else(|err| eprintln!("Could not process key press command: {err}"));
             }
         }
+    }
+}
+
+impl Default for InputExecutor {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -36,7 +36,7 @@ pub fn print_command_examples() {
 
     println!(
         "Mouse click example: {}",
-        serde_json::to_string::<RemoteCommand>((&mouse_click)).unwrap_or_default()
+        serde_json::to_string::<RemoteCommand>(&mouse_click).unwrap_or_default()
     );
 
     let key_press = RemoteCommand::KeyPress {
