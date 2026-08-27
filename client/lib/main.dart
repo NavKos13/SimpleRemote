@@ -1,3 +1,4 @@
+import 'package:client/screens/connect_screen.dart';
 import 'package:flutter/material.dart';
 import 'widgets/trackpad.dart';
 import 'services/udp_service.dart';
@@ -17,27 +18,28 @@ class SimpleRemoteApp extends StatefulWidget {
 }
 
 class _SimpleRemoteAppState extends State<SimpleRemoteApp> {
-  late final UdpService _udpService;
+  // late final UdpService _udpService;
 
-  @override
-  void initState() {
-    super.initState();
-    _udpService = UdpService(hostIp: serverIp, port: serverPort);
-    _udpService.init();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _udpService = UdpService(hostIp: serverIp, port: serverPort);
+  //   _udpService.init();
+  // }
 
-  @override
-  void dispose() {
-    _udpService.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _udpService.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SimpleRemote Client',
       theme: ThemeData.dark(),
-      home: TrackpadScreen(udpService: _udpService),
+      // home: TrackpadScreen(udpService: _udpService),
+      home: const ConnectScreen(),
     );
   }
 }
