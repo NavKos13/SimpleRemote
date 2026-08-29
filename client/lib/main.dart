@@ -18,20 +18,6 @@ class SimpleRemoteApp extends StatefulWidget {
 }
 
 class _SimpleRemoteAppState extends State<SimpleRemoteApp> {
-  // late final UdpService _udpService;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _udpService = UdpService(hostIp: serverIp, port: serverPort);
-  //   _udpService.init();
-  // }
-
-  // @override
-  // void dispose() {
-  //   _udpService.dispose();
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {

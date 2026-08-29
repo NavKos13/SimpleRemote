@@ -8,7 +8,7 @@ class TrackpadWidget extends StatefulWidget {
   final UdpService udpService;
   final double sensitivity;
 
-  TrackpadWidget({
+  const TrackpadWidget({
     super.key,
     required this.udpService,
     required this.sensitivity,
@@ -19,30 +19,88 @@ class TrackpadWidget extends StatefulWidget {
 }
 
 class _TrackpadWidgetState extends State<TrackpadWidget> {
+  int _pointerCount = 0;
+  bool _twoFingerTapCandidate = false;
+
+  void _sendRightClick() {
+    debugPrint('Right click detected (two-finger tap)');
+
+    final RemoteCommand command = MouseClickCommand(
+      button: Button.right,
+      direction: Direction.click,
+    );
+    widget.udpService.sendRemoteCommand(command);
+  }
+
+  void _sendLeftClick() {
+    debugPrint('Left click detected');
+
+    final RemoteCommand command = MouseClickCommand(
+      button: Button.left,
+      direction: Direction.click,
+    );
+    widget.udpService.sendRemoteCommand(command);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onPanStart: (DragStartDetails details) {
-        // 1. Log or track the starting position
-        debugPrint('Pan started at local: ${details.localPosition}');
-        debugPrint('Pan started at global: ${details.globalPosition}');
+    return Listener(
+      onPointerDown: (PointerDownEvent event) {
+        _pointerCount++;
+        if (_pointerCount == 2) {
+          _twoFingerTapCandidate = true;
+        } else if (_pointerCount > 2) {
+          _twoFingerTapCandidate = false;
+        }
       },
-      onPanUpdate: (DragUpdateDetails details) {
-        final double dx = details.delta.dx * widget.sensitivity;
-        final double dy = details.delta.dy * widget.sensitivity;
-        debugPrint('Delta movement: dx=$dx, dy=$dy');
 
-        final RemoteCommand command = MouseMoveCommand(dx: dx, dy: dy);
-        widget.udpService.sendRemoteCommand(command);
+      onPointerUp: (PointerUpEvent event) {
+        _pointerCount = (_pointerCount - 1).clamp(0, 10);
+
+        if (_twoFingerTapCandidate && _pointerCount == 0) {
+          _twoFingerTapCandidate = false;
+          _sendRightClick();
+        }
       },
-      child: Container(
-        width: 300,
-        height: 300,
-        decoration: BoxDecoration(
-          color: Colors.grey[850],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.blueAccent, width: 2),
+
+      onPointerCancel: (_) {
+        _pointerCount = 0;
+        _twoFingerTapCandidate = false;
+      },
+
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanStart: (DragStartDetails details) {
+          if (_pointerCount > 1) {
+            _twoFingerTapCandidate = false;
+          }
+        },
+
+        onPanUpdate: (DragUpdateDetails details) {
+          _twoFingerTapCandidate = false;
+
+          final double dx = details.delta.dx * widget.sensitivity;
+          final double dy = details.delta.dy * widget.sensitivity;
+          debugPrint('Delta movement: dx=$dx, dy=$dy');
+
+          final RemoteCommand command = MouseMoveCommand(dx: dx, dy: dy);
+          widget.udpService.sendRemoteCommand(command);
+        },
+
+        onTap: () {
+          if (!_twoFingerTapCandidate) {
+            _sendLeftClick();
+          }
+        },
+
+        child: Container(
+          width: 300,
+          height: 300,
+          decoration: BoxDecoration(
+            color: Colors.grey[850],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.blueAccent, width: 2),
+          ),
         ),
       ),
     );
