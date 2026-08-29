@@ -9,6 +9,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
+pub mod discovery;
 pub mod executor;
 pub mod network;
 pub mod protocol;
@@ -23,6 +24,8 @@ const SERVER_PORT: u16 = 8080;
 fn main() {
     protocol::print_command_examples();
     enigo::set_dpi_awareness().unwrap();
+
+    let _mdns_daemon = discovery::start_mdns_broadcast(8080);
 
     let mut executor = executor::InputExecutor::new();
 

@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tokio = {version = "^1.0", features = ["full"]}
 enigo = {version= "0.6.1", features = ["serde"]}
 serde = {version="1.0.228", features = ["derive"]}
 serde_json = "1.0.150"
-eframe = "^0.35.0"
+mdns-sd = "0.21.0"
+local-ip-address = "0.6.13"
