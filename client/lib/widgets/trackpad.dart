@@ -1,8 +1,7 @@
 import 'package:client/models/remote_command.dart';
 import 'package:client/services/udp_service.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class TrackpadWidget extends StatefulWidget {
   final UdpService udpService;
@@ -21,6 +20,7 @@ class TrackpadWidget extends StatefulWidget {
 class _TrackpadWidgetState extends State<TrackpadWidget> {
   int _pointerCount = 0;
   bool _twoFingerTapCandidate = false;
+  bool _longPress = false;
 
   void _sendRightClick() {
     debugPrint('Right click detected (two-finger tap)');
@@ -59,6 +59,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
 
         if (_twoFingerTapCandidate && _pointerCount == 0) {
           _twoFingerTapCandidate = false;
+          HapticFeedback.lightImpact();
           _sendRightClick();
         }
       },
@@ -81,16 +82,37 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
 
           final double dx = details.delta.dx * widget.sensitivity;
           final double dy = details.delta.dy * widget.sensitivity;
-          debugPrint('Delta movement: dx=$dx, dy=$dy');
+          // debugPrint('Delta movement: dx=$dx, dy=$dy');
 
           final RemoteCommand command = MouseMoveCommand(dx: dx, dy: dy);
           widget.udpService.sendRemoteCommand(command);
         },
 
         onTap: () {
-          if (!_twoFingerTapCandidate) {
+          HapticFeedback.heavyImpact();
+
+          if (_longPress) {
+            final RemoteCommand releaseCommand = MouseClickCommand(
+              button: Button.left,
+              direction: Direction.release,
+            );
+            widget.udpService.sendRemoteCommand(releaseCommand);
+            _longPress = false;
+          } else if (!_twoFingerTapCandidate) {
             _sendLeftClick();
           }
+        },
+
+        onLongPress: () {
+          _longPress = true;
+          HapticFeedback.lightImpact();
+
+          debugPrint('Long press detected');
+          final RemoteCommand pressCommand = MouseClickCommand(
+            button: Button.left,
+            direction: Direction.press,
+          );
+          widget.udpService.sendRemoteCommand(pressCommand);
         },
 
         child: Container(
