@@ -21,6 +21,9 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
   int _pointerCount = 0;
   bool _twoFingerTapCandidate = false;
   bool _longPress = false;
+  double _scrollAccumulatorX = 0.0;
+  double _scrollAccumulatorY = 0.0;
+  static const double _scrollSensitivity = 0.08;
 
   void _sendRightClick() {
     debugPrint('Right click detected (two-finger tap)');
@@ -73,6 +76,8 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
         behavior: HitTestBehavior.opaque,
 
         onScaleStart: (ScaleStartDetails details) {
+          _scrollAccumulatorX = 0.0;
+          _scrollAccumulatorY = 0.0;
           if (_pointerCount > 1) {
             _twoFingerTapCandidate = false;
           }
@@ -88,11 +93,25 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
               MouseMoveCommand(dx: dx, dy: dy),
             );
           } else if (details.pointerCount == 2) {
-            final double scrollX = details.focalPointDelta.dx;
-            final double scrollY = details.focalPointDelta.dy;
-            widget.udpService.sendRemoteCommand(
-              MouseScrollCommand(scrollX: scrollX, scrollY: scrollY),
-            );
+            _scrollAccumulatorX +=
+                -details.focalPointDelta.dx * _scrollSensitivity;
+            _scrollAccumulatorY +=
+                -details.focalPointDelta.dy * _scrollSensitivity;
+
+            final int stepX = _scrollAccumulatorX.truncate();
+            final int stepY = _scrollAccumulatorY.truncate();
+
+            if (stepX != 0 || stepY != 0) {
+              _scrollAccumulatorX -= stepX;
+              _scrollAccumulatorY -= stepY;
+
+              widget.udpService.sendRemoteCommand(
+                MouseScrollCommand(
+                  scrollX: stepX.toDouble(),
+                  scrollY: stepY.toDouble(),
+                ),
+              );
+            }
           }
         },
 
