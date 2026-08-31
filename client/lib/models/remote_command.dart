@@ -34,6 +34,20 @@ class MouseClickCommand extends RemoteCommand {
   };
 }
 
+class MouseScrollCommand extends RemoteCommand {
+  final double scrollX;
+  final double scrollY;
+
+  const MouseScrollCommand({required this.scrollX, required this.scrollY});
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'type': 'mouseScroll',
+    'dx': scrollX,
+    'dy': scrollY,
+  };
+}
+
 enum Button {
   left('Left'),
   middle('Middle'),

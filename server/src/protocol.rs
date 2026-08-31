@@ -12,6 +12,10 @@ pub enum RemoteCommand {
         button: Button,
         direction: Direction,
     },
+    MouseScroll {
+        dx: f32,
+        dy: f32,
+    },
     KeyPress {
         key: Key,
         direction: Direction,

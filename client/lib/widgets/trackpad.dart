@@ -71,21 +71,29 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
 
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onPanStart: (DragStartDetails details) {
+
+        onScaleStart: (ScaleStartDetails details) {
           if (_pointerCount > 1) {
             _twoFingerTapCandidate = false;
           }
         },
 
-        onPanUpdate: (DragUpdateDetails details) {
+        onScaleUpdate: (ScaleUpdateDetails details) {
           _twoFingerTapCandidate = false;
 
-          final double dx = details.delta.dx * widget.sensitivity;
-          final double dy = details.delta.dy * widget.sensitivity;
-          // debugPrint('Delta movement: dx=$dx, dy=$dy');
-
-          final RemoteCommand command = MouseMoveCommand(dx: dx, dy: dy);
-          widget.udpService.sendRemoteCommand(command);
+          if (details.pointerCount == 1) {
+            final double dx = details.focalPointDelta.dx * widget.sensitivity;
+            final double dy = details.focalPointDelta.dy * widget.sensitivity;
+            widget.udpService.sendRemoteCommand(
+              MouseMoveCommand(dx: dx, dy: dy),
+            );
+          } else if (details.pointerCount == 2) {
+            final double scrollX = details.focalPointDelta.dx;
+            final double scrollY = details.focalPointDelta.dy;
+            widget.udpService.sendRemoteCommand(
+              MouseScrollCommand(scrollX: scrollX, scrollY: scrollY),
+            );
+          }
         },
 
         onTap: () {
@@ -116,8 +124,9 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
         },
 
         child: Container(
-          width: 300,
-          height: 300,
+          width: double.infinity,
+          height: double.infinity,
+          margin: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0),
           decoration: BoxDecoration(
             color: Colors.grey[850],
             borderRadius: BorderRadius.circular(12),

@@ -22,16 +22,15 @@ const SERVER_IP: &str = "0.0.0.0:8080";
 const SERVER_PORT: u16 = 8080;
 
 fn main() {
-    protocol::print_command_examples();
     enigo::set_dpi_awareness().unwrap();
 
-    let _mdns_daemon = discovery::start_mdns_broadcast(8080);
+    let _mdns_daemon = discovery::start_mdns_broadcast(SERVER_PORT);
 
     let mut executor = executor::InputExecutor::new();
 
-    // TCP THREAD
     let (tx, rx) = mpsc::channel();
 
+    // TCP THREAD
     let tcp_handle = network::spawn_tcp_listener(SERVER_IP, tx.clone());
 
     // UDP THREAD

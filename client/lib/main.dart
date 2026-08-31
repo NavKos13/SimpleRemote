@@ -18,7 +18,6 @@ class SimpleRemoteApp extends StatefulWidget {
 }
 
 class _SimpleRemoteAppState extends State<SimpleRemoteApp> {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -44,21 +43,31 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SimpleRemote Trackpad')),
+      appBar: AppBar(
+        title: const Text(
+          'SimpleRemote',
+          style: TextStyle(fontFamily: 'FiraSans'),
+        ),
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TrackpadWidget(
-            udpService: widget.udpService,
-            sensitivity: _sensitivity,
+          Expanded(
+            child: TrackpadWidget(
+              udpService: widget.udpService,
+              sensitivity: _sensitivity,
+            ),
           ),
-          SensitivitySlider(
-            currentValue: _sensitivity,
-            onChanged: (newValue) {
-              setState(() {
-                _sensitivity = newValue;
-              });
-            },
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 0, 0, 16.0),
+            child: SensitivitySlider(
+              currentValue: _sensitivity,
+              onChanged: (newValue) {
+                setState(() {
+                  _sensitivity = newValue;
+                });
+              },
+            ),
           ),
         ],
       ),

@@ -28,6 +28,10 @@ impl InputExecutor {
                     .key(key, direction)
                     .unwrap_or_else(|err| eprintln!("Could not process key press command: {err}"));
             }
+            RemoteCommand::MouseScroll { dx, dy } => {
+                self.enigo.scroll(dy as i32, Axis::Vertical);
+                self.enigo.scroll(dx as i32, Axis::Horizontal);
+            }
         }
     }
 }
