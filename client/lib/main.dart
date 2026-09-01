@@ -1,3 +1,4 @@
+import 'package:client/screens/connect_screen.dart';
 import 'package:flutter/material.dart';
 import 'widgets/trackpad.dart';
 import 'services/udp_service.dart';
@@ -17,27 +18,13 @@ class SimpleRemoteApp extends StatefulWidget {
 }
 
 class _SimpleRemoteAppState extends State<SimpleRemoteApp> {
-  late final UdpService _udpService;
-
-  @override
-  void initState() {
-    super.initState();
-    _udpService = UdpService(hostIp: serverIp, port: serverPort);
-    _udpService.init();
-  }
-
-  @override
-  void dispose() {
-    _udpService.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SimpleRemote Client',
       theme: ThemeData.dark(),
-      home: TrackpadScreen(udpService: _udpService),
+      // home: TrackpadScreen(udpService: _udpService),
+      home: const ConnectScreen(),
     );
   }
 }
@@ -56,21 +43,31 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SimpleRemote Trackpad')),
+      appBar: AppBar(
+        title: const Text(
+          'SimpleRemote',
+          style: TextStyle(fontFamily: 'FiraSans'),
+        ),
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TrackpadWidget(
-            udpService: widget.udpService,
-            sensitivity: _sensitivity,
+          Expanded(
+            child: TrackpadWidget(
+              udpService: widget.udpService,
+              sensitivity: _sensitivity,
+            ),
           ),
-          SensitivitySlider(
-            currentValue: _sensitivity,
-            onChanged: (newValue) {
-              setState(() {
-                _sensitivity = newValue;
-              });
-            },
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 0, 0, 16.0),
+            child: SensitivitySlider(
+              currentValue: _sensitivity,
+              onChanged: (newValue) {
+                setState(() {
+                  _sensitivity = newValue;
+                });
+              },
+            ),
           ),
         ],
       ),

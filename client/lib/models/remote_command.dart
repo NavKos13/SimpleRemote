@@ -19,3 +19,55 @@ class MouseMoveCommand extends RemoteCommand {
   @override
   Map<String, dynamic> toJson() => {'type': 'mouseMove', 'dx': dx, 'dy': dy};
 }
+
+class MouseClickCommand extends RemoteCommand {
+  final Button button;
+  final Direction direction;
+
+  const MouseClickCommand({required this.button, required this.direction});
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'type': 'mouseClick',
+    'button': button.value,
+    'direction': direction.value,
+  };
+}
+
+class MouseScrollCommand extends RemoteCommand {
+  final double scrollX;
+  final double scrollY;
+
+  const MouseScrollCommand({required this.scrollX, required this.scrollY});
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'type': 'mouseScroll',
+    'dx': scrollX,
+    'dy': scrollY,
+  };
+}
+
+enum Button {
+  left('Left'),
+  middle('Middle'),
+  right('Right'),
+  back('Back'),
+  forward('Forward'),
+  scrollUp('ScrollUp'),
+  scrollDown('ScrollDown'),
+  scrollLeft('ScrollLeft'),
+  scrollRight('ScrollRight');
+
+  final String value;
+  const Button(this.value);
+}
+
+enum Direction {
+  press('Press'),
+  release('Release'),
+  click('Click');
+
+  final String value;
+  const Direction(this.value);
+}
