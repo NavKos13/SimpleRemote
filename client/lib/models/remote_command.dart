@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'enums.dart';
+
 abstract class RemoteCommand {
   const RemoteCommand();
 
@@ -21,7 +23,7 @@ class MouseMoveCommand extends RemoteCommand {
 }
 
 class MouseClickCommand extends RemoteCommand {
-  final Button button;
+  final MouseButton button;
   final Direction direction;
 
   const MouseClickCommand({required this.button, required this.direction});
@@ -48,26 +50,25 @@ class MouseScrollCommand extends RemoteCommand {
   };
 }
 
-enum Button {
-  left('Left'),
-  middle('Middle'),
-  right('Right'),
-  back('Back'),
-  forward('Forward'),
-  scrollUp('ScrollUp'),
-  scrollDown('ScrollDown'),
-  scrollLeft('ScrollLeft'),
-  scrollRight('ScrollRight');
+class TextInputCommand extends RemoteCommand {
+  final String text;
 
-  final String value;
-  const Button(this.value);
+  const TextInputCommand({required this.text});
+
+  @override
+  Map<String, dynamic> toJson() => {'type': 'keyPress', 'key': text};
 }
 
-enum Direction {
-  press('Press'),
-  release('Release'),
-  click('Click');
+class SpecialKeyPressCommand extends RemoteCommand {
+  final SpecialKey key;
+  final Direction direction;
 
-  final String value;
-  const Direction(this.value);
+  const SpecialKeyPressCommand({required this.key, required this.direction});
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'type': 'specialKey',
+    'key': key.value,
+    'direction': direction.value,
+  };
 }

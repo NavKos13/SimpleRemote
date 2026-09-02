@@ -1,3 +1,4 @@
+import 'package:client/models/enums.dart';
 import 'package:client/models/remote_command.dart';
 import 'package:client/services/udp_service.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
     debugPrint('Right click detected (two-finger tap)');
 
     final RemoteCommand command = MouseClickCommand(
-      button: Button.right,
+      button: MouseButton.right,
       direction: Direction.click,
     );
     widget.udpService.sendRemoteCommand(command);
@@ -40,7 +41,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
     debugPrint('Left click detected');
 
     final RemoteCommand command = MouseClickCommand(
-      button: Button.left,
+      button: MouseButton.left,
       direction: Direction.click,
     );
     widget.udpService.sendRemoteCommand(command);
@@ -124,7 +125,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
 
             if (_longPress) {
               final RemoteCommand releaseCommand = MouseClickCommand(
-                button: Button.left,
+                button: MouseButton.left,
                 direction: Direction.release,
               );
               widget.udpService.sendRemoteCommand(releaseCommand);
@@ -140,7 +141,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
 
             debugPrint('Long press detected');
             final RemoteCommand pressCommand = MouseClickCommand(
-              button: Button.left,
+              button: MouseButton.left,
               direction: Direction.press,
             );
             widget.udpService.sendRemoteCommand(pressCommand);
