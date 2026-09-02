@@ -2,6 +2,7 @@ import 'package:client/models/remote_command.dart';
 import 'package:client/services/udp_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shadcn_ui/shadcn_ui.dart' hide Direction;
 
 class TrackpadWidget extends StatefulWidget {
   final UdpService udpService;
@@ -72,108 +73,91 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
         _twoFingerTapCandidate = false;
       },
 
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: ShadCard(
+        padding: EdgeInsets.zero,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
 
-        onScaleStart: (ScaleStartDetails details) {
-          _scrollAccumulatorX = 0.0;
-          _scrollAccumulatorY = 0.0;
-          if (_pointerCount > 1) {
-            _twoFingerTapCandidate = false;
-          }
-        },
-
-        onScaleUpdate: (ScaleUpdateDetails details) {
-          _twoFingerTapCandidate = false;
-
-          if (details.pointerCount == 1) {
-            final double dx = details.focalPointDelta.dx * widget.sensitivity;
-            final double dy = details.focalPointDelta.dy * widget.sensitivity;
-            widget.udpService.sendRemoteCommand(
-              MouseMoveCommand(dx: dx, dy: dy),
-            );
-          } else if (details.pointerCount == 2) {
-            _scrollAccumulatorX +=
-                -details.focalPointDelta.dx * _scrollSensitivity;
-            _scrollAccumulatorY +=
-                -details.focalPointDelta.dy * _scrollSensitivity;
-
-            final int stepX = _scrollAccumulatorX.truncate();
-            final int stepY = _scrollAccumulatorY.truncate();
-
-            if (stepX != 0 || stepY != 0) {
-              _scrollAccumulatorX -= stepX;
-              _scrollAccumulatorY -= stepY;
-
-              widget.udpService.sendRemoteCommand(
-                MouseScrollCommand(
-                  scrollX: stepX.toDouble(),
-                  scrollY: stepY.toDouble(),
-                ),
-              );
+          onScaleStart: (ScaleStartDetails details) {
+            _scrollAccumulatorX = 0.0;
+            _scrollAccumulatorY = 0.0;
+            if (_pointerCount > 1) {
+              _twoFingerTapCandidate = false;
             }
-          }
-        },
+          },
 
-        onTap: () {
-          HapticFeedback.heavyImpact();
+          onScaleUpdate: (ScaleUpdateDetails details) {
+            _twoFingerTapCandidate = false;
 
-          if (_longPress) {
-            final RemoteCommand releaseCommand = MouseClickCommand(
+            if (details.pointerCount == 1) {
+              final double dx = details.focalPointDelta.dx * widget.sensitivity;
+              final double dy = details.focalPointDelta.dy * widget.sensitivity;
+              widget.udpService.sendRemoteCommand(
+                MouseMoveCommand(dx: dx, dy: dy),
+              );
+            } else if (details.pointerCount == 2) {
+              _scrollAccumulatorX +=
+                  -details.focalPointDelta.dx * _scrollSensitivity;
+              _scrollAccumulatorY +=
+                  -details.focalPointDelta.dy * _scrollSensitivity;
+
+              final int stepX = _scrollAccumulatorX.truncate();
+              final int stepY = _scrollAccumulatorY.truncate();
+
+              if (stepX != 0 || stepY != 0) {
+                _scrollAccumulatorX -= stepX;
+                _scrollAccumulatorY -= stepY;
+
+                widget.udpService.sendRemoteCommand(
+                  MouseScrollCommand(
+                    scrollX: stepX.toDouble(),
+                    scrollY: stepY.toDouble(),
+                  ),
+                );
+              }
+            }
+          },
+
+          onTap: () {
+            HapticFeedback.heavyImpact();
+
+            if (_longPress) {
+              final RemoteCommand releaseCommand = MouseClickCommand(
+                button: Button.left,
+                direction: Direction.release,
+              );
+              widget.udpService.sendRemoteCommand(releaseCommand);
+              _longPress = false;
+            } else if (!_twoFingerTapCandidate) {
+              _sendLeftClick();
+            }
+          },
+
+          onLongPress: () {
+            _longPress = true;
+            HapticFeedback.lightImpact();
+
+            debugPrint('Long press detected');
+            final RemoteCommand pressCommand = MouseClickCommand(
               button: Button.left,
-              direction: Direction.release,
+              direction: Direction.press,
             );
-            widget.udpService.sendRemoteCommand(releaseCommand);
-            _longPress = false;
-          } else if (!_twoFingerTapCandidate) {
-            _sendLeftClick();
-          }
-        },
+            widget.udpService.sendRemoteCommand(pressCommand);
+          },
 
-        onLongPress: () {
-          _longPress = true;
-          HapticFeedback.lightImpact();
-
-          debugPrint('Long press detected');
-          final RemoteCommand pressCommand = MouseClickCommand(
-            button: Button.left,
-            direction: Direction.press,
-          );
-          widget.udpService.sendRemoteCommand(pressCommand);
-        },
-
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          margin: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0),
-          decoration: BoxDecoration(
-            color: Colors.grey[850],
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blueAccent, width: 2),
-          ),
+          child: const SizedBox.expand(),
+          // Container(
+          //   width: double.infinity,
+          //   height: double.infinity,
+          //   margin: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0),
+          //   decoration: BoxDecoration(
+          //     color: Colors.grey[850],
+          //     borderRadius: BorderRadius.circular(12),
+          //     border: Border.all(color: Colors.blueAccent, width: 2),
+          //   ),
+          // ),
         ),
       ),
-    );
-  }
-}
-
-class SensitivitySlider extends StatelessWidget {
-  final double currentValue;
-  final ValueChanged<double> onChanged;
-
-  const SensitivitySlider({
-    super.key,
-    required this.currentValue,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Slider(
-      value: currentValue,
-      min: 1.0,
-      max: 10.0,
-      onChanged: onChanged,
     );
   }
 }

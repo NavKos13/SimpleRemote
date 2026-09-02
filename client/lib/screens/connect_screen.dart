@@ -1,7 +1,7 @@
-import 'package:client/main.dart';
 import 'package:nsd/nsd.dart';
 import 'package:flutter/material.dart';
 import '../services/udp_service.dart';
+import 'trackpad_screen.dart';
 
 const String serviceTypeDiscover = '_simpleremote._udp';
 
