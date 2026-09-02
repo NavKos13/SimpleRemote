@@ -23,15 +23,21 @@ impl InputExecutor {
                     eprintln!("Could not process mouse click command: {err}")
                 });
             }
-            RemoteCommand::KeyPress { key, direction } => {
-                self.enigo
-                    .key(key, direction)
-                    .unwrap_or_else(|err| eprintln!("Could not process key press command: {err}"));
-            }
             RemoteCommand::MouseScroll { dx, dy } => {
                 self.enigo.scroll(dy as i32, Axis::Vertical);
                 self.enigo.scroll(dx as i32, Axis::Horizontal);
             }
+            RemoteCommand::SpecialKey { key, direction } => {
+                self.enigo
+                    .key(enigo::Key::from(key), direction)
+                    .unwrap_or_else(|err| {
+                        eprintln!("Could not process special key press command: {err}")
+                    });
+            }
+            RemoteCommand::TextInput { text } => self
+                .enigo
+                .text(&text)
+                .unwrap_or_else(|err| eprintln!("Could not process key press command: {err}")),
         }
     }
 }
