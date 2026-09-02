@@ -48,6 +48,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ShadTheme.of(context);
     return Listener(
       onPointerDown: (PointerDownEvent event) {
         _pointerCount++;
@@ -145,7 +146,22 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
             widget.udpService.sendRemoteCommand(pressCommand);
           },
 
-          child: const SizedBox.expand(),
+          child: SizedBox.expand(
+            child: Center(
+              child: Text(
+                '''
+Drag to move mouse\n
+Tap with one finger to left-click\n
+Tap with two fingers to right-click\n
+Drag with two fingers to scroll\n
+Long press to hold down L-click\n
+Tap once to release L-click
+                ''',
+                style: theme.textTheme.small.copyWith(fontFamily: 'FiraSans'),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
           // Container(
           //   width: double.infinity,
           //   height: double.infinity,

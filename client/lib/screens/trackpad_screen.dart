@@ -59,7 +59,7 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 8.0),
+              SizedBox(height: 10.0),
               SensitivitySlider(
                 currentValue: _sensitivity,
                 onChanged: (newValue) {
@@ -69,17 +69,6 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                 },
               ),
               const SizedBox(height: 16.0),
-              // Container(
-              //   margin: EdgeInsets.fromLTRB(0, 0, 0, 16.0),
-              //   child: SensitivitySlider(
-              //     currentValue: _sensitivity,
-              //     onChanged: (newValue) {
-              //       setState(() {
-              //         _sensitivity = newValue;
-              //       });
-              //     },
-              //   ),
-              // ),
             ],
           ),
         ),
