@@ -56,7 +56,7 @@ class TextInputCommand extends RemoteCommand {
   const TextInputCommand({required this.text});
 
   @override
-  Map<String, dynamic> toJson() => {'type': 'keyPress', 'key': text};
+  Map<String, dynamic> toJson() => {'type': 'textInput', 'text': text};
 }
 
 class SpecialKeyPressCommand extends RemoteCommand {

@@ -42,6 +42,8 @@ pub fn spawn_tcp_listener(bind_addr: &'static str, tx: Sender<RemoteCommand>) ->
 
                         if let Ok(cmd) = serde_json::from_str::<RemoteCommand>(message) {
                             let _ = tx.send(cmd);
+                        } else {
+                            println!("Could not parse command (TCP)")
                         }
                     }
                     Err(e) => {

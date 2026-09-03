@@ -25,7 +25,7 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
 
   void _openKeyboardSheet() {
     showShadSheet(
-      side: ShadSheetSide.top,
+      side: ShadSheetSide.bottom,
       context: context,
       builder: (context) => RemoteKeyboardSheet(tcpService: widget.tcpService),
     );
@@ -34,16 +34,31 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'SimpleRemote',
-          style: TextStyle(fontFamily: 'FiraSans', fontWeight: FontWeight.w600),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14.0, 0.0, 14.0, 14.0),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'SimpleRemote',
+            style: TextStyle(
+              fontFamily: 'FiraSans',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+        // floatingActionButton: ShadIconButton(
+        //   icon: Icon(Icons.keyboard),
+        //   onPressed: _openKeyboardSheet,
+        // ),
+        persistentFooterButtons: [
+          ShadIconButton(
+            icon: Icon(Icons.keyboard),
+            onPressed: _openKeyboardSheet,
+          ),
+        ],
+        persistentFooterAlignment: AlignmentDirectional.topCenter,
+        persistentFooterDecoration: BoxDecoration(),
+        body: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -53,7 +68,13 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                   sensitivity: _sensitivity,
                 ),
               ),
-              const SizedBox(height: 20.0),
+              const SizedBox(height: 16),
+              const ShadSeparator.horizontal(
+                thickness: 4,
+                margin: EdgeInsets.symmetric(horizontal: 0),
+                radius: BorderRadius.all(Radius.circular(4)),
+              ),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
@@ -79,16 +100,16 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 16.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ShadIconButton(
-                    icon: Icon(Icons.keyboard),
-                    onPressed: _openKeyboardSheet,
-                  ),
-                ],
-              ),
+              const SizedBox(height: 10.0),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     ShadIconButton(
+              //       icon: Icon(Icons.keyboard),
+              //       onPressed: _openKeyboardSheet,
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

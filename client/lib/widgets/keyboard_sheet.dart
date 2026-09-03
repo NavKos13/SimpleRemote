@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shadcn_ui/shadcn_ui.dart' hide Direction;
 import '../models/remote_command.dart';
 import '../models/enums.dart';
@@ -26,6 +27,17 @@ class _RemoteKeyboardSheetState extends State<RemoteKeyboardSheet> {
   @override
   void initState() {
     super.initState();
+
+    _focusNode.onKeyEvent = (FocusNode node, KeyEvent event) {
+      if (event is KeyDownEvent &&
+          event.logicalKey == LogicalKeyboardKey.backspace) {
+        _sendSingleClickKey(SpecialKey.backspace);
+        _textController.clear();
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    };
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
@@ -100,11 +112,9 @@ class _RemoteKeyboardSheetState extends State<RemoteKeyboardSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
     return ShadSheet(
-      title: Text('Modifiers'),
       description: const Text(
-        'Type to stream inputs; tap buttons for desktop keys.',
+        'Type to stream inputs; tap buttons for modifier keys.',
       ),
       actions: [
         ShadButton.ghost(
@@ -117,16 +127,17 @@ class _RemoteKeyboardSheetState extends State<RemoteKeyboardSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ShadInput(
-            controller: _textController,
-            focusNode: _focusNode,
-            placeholder: const Text(
-              'Tap here and use native keyboard to stream...',
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: ShadInput(
+              controller: _textController,
+              focusNode: _focusNode,
+              placeholder: const Text('Tap here to use the keyboard'),
+              autofocus: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              onChanged: _onTextChanged,
             ),
-            autofocus: true,
-            autocorrect: false,
-            enableSuggestions: false,
-            onChanged: _onTextChanged,
           ),
           const SizedBox(height: 12.0),
 
