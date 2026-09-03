@@ -1,3 +1,4 @@
+import 'package:client/services/tcp_service.dart';
 import 'package:nsd/nsd.dart';
 import 'package:flutter/material.dart';
 import '../services/udp_service.dart';
@@ -49,11 +50,15 @@ class _ConnectScreenState extends State<ConnectScreen> {
     final udpService = UdpService(hostIp: ip, port: port);
     await udpService.init();
 
+    final tcpService = TcpService(hostIp: ip, port: port);
+    await tcpService.connect();
+
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => TrackpadScreen(udpService: udpService),
+        builder: (context) =>
+            TrackpadScreen(udpService: udpService, tcpService: tcpService),
       ),
     );
   }

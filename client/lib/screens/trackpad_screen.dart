@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
+import '../services/tcp_service.dart';
 import '../services/udp_service.dart';
+import '../widgets/keyboard_sheet.dart';
 import '../widgets/sensitivity_slider.dart';
 import '../widgets/trackpad.dart';
 
 class TrackpadScreen extends StatefulWidget {
   final UdpService udpService;
-  const TrackpadScreen({super.key, required this.udpService});
+  final TcpService tcpService;
+  const TrackpadScreen({
+    super.key,
+    required this.udpService,
+    required this.tcpService,
+  });
 
   @override
   State<TrackpadScreen> createState() => _TrackpadScreenState();
@@ -15,6 +22,14 @@ class TrackpadScreen extends StatefulWidget {
 
 class _TrackpadScreenState extends State<TrackpadScreen> {
   double _sensitivity = 2.0;
+
+  void _openKeyboardSheet() {
+    showShadSheet(
+      side: ShadSheetSide.top,
+      context: context,
+      builder: (context) => RemoteKeyboardSheet(tcpService: widget.tcpService),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,15 +60,11 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                 children: [
                   Text(
                     'Sensitivity',
-                    style: theme.textTheme.muted.copyWith(
-                      fontFamily: 'FiraSans',
-                      fontSize: 12,
-                    ),
+                    style: theme.textTheme.muted.copyWith(fontSize: 12),
                   ),
                   Text(
                     _sensitivity.toStringAsFixed(1),
                     style: theme.textTheme.small.copyWith(
-                      fontFamily: 'FiraSans',
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -69,6 +80,15 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                 },
               ),
               const SizedBox(height: 16.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ShadIconButton(
+                    icon: Icon(Icons.keyboard),
+                    onPressed: _openKeyboardSheet,
+                  ),
+                ],
+              ),
             ],
           ),
         ),
