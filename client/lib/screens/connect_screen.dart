@@ -1,6 +1,7 @@
 import 'package:client/services/tcp_service.dart';
 import 'package:nsd/nsd.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import '../services/udp_service.dart';
 import 'trackpad_screen.dart';
 
@@ -76,7 +77,15 @@ class _ConnectScreenState extends State<ConnectScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(),
+            ShadIconButton(
+              icon: SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: ShadTheme.of(context).colorScheme.primaryForeground,
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
             Text(_status, style: const TextStyle(color: Colors.white70)),
           ],
