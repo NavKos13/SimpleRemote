@@ -37,19 +37,7 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14.0, 0.0, 14.0, 14.0),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'SimpleRemote',
-            style: TextStyle(
-              fontFamily: 'FiraSans',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        // floatingActionButton: ShadIconButton(
-        //   icon: Icon(Icons.keyboard),
-        //   onPressed: _openKeyboardSheet,
-        // ),
+        appBar: AppBar(title: Text('SimpleRemote', style: theme.textTheme.h2)),
         persistentFooterButtons: [
           ShadIconButton(
             icon: Icon(Icons.keyboard),
