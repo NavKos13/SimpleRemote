@@ -52,7 +52,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
   }
 
   Future<void> _connectToServer(String ip, int port) async {
-    if (_discovery != null) await stopDiscovery(_discovery!);
+    if (_discovery != null) await _safeStopDiscovery();
 
     final udpService = UdpService(hostIp: ip, port: port);
     await udpService.init();
@@ -61,7 +61,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
     await tcpService.connect();
 
     if (!mounted) return;
-    Navigator.pushReplacement(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
@@ -70,9 +70,22 @@ class _ConnectScreenState extends State<ConnectScreen> {
     );
   }
 
+  Future<void> _safeStopDiscovery() async {
+    final discovery = _discovery;
+    _discovery = null;
+
+    if (discovery != null) {
+      try {
+        await stopDiscovery(discovery);
+      } catch (e) {
+        debugPrint("ignored stopDiscovery error: $e");
+      }
+    }
+  }
+
   @override
   void dispose() {
-    if (_discovery != null) stopDiscovery(_discovery!);
+    if (_discovery != null) _safeStopDiscovery();
     _ipController.dispose();
     super.dispose();
   }
@@ -100,13 +113,14 @@ class _ConnectScreenState extends State<ConnectScreen> {
               children: [
                 Text(
                   service.name ?? 'Unknown Device',
-                  style: theme.textTheme.large.copyWith(fontSize: 16),
+                  style: theme.textTheme.large.copyWith(fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Text(ip, style: theme.textTheme.muted),
               ],
             ),
           ),
+          SizedBox(width: 4),
           ShadButton(
             size: ShadButtonSize.sm,
             child: const Text('CONNECT'),
@@ -141,7 +155,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
                           border: Border.all(color: theme.colorScheme.primary),
                         ),
                         child: Icon(
-                          LucideIcons.wifiCog,
+                          LucideIcons.smartphoneNfc,
                           color: theme.colorScheme.primary,
                         ),
                       ),
@@ -150,19 +164,19 @@ class _ConnectScreenState extends State<ConnectScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('SimpleRemote', style: theme.textTheme.h4),
-                          Text(
-                            'Desktop Link',
-                            style: theme.textTheme.small.copyWith(
-                              color: theme.colorScheme.secondary,
-                              fontSize: 10,
-                            ),
-                          ),
+                          // Text(
+                          //   'Desktop Link',
+                          //   style: theme.textTheme.small.copyWith(
+                          //     color: theme.colorScheme.secondary,
+                          //     fontSize: 10,
+                          //   ),
+                          // ),
                         ],
                       ),
                     ],
                   ),
                   if (_isScanning)
-                    ShadBadge.outline(
+                    ShadBadge.secondary(
                       child: Row(
                         children: [
                           Container(
@@ -170,6 +184,24 @@ class _ConnectScreenState extends State<ConnectScreen> {
                             height: 6,
                             decoration: const BoxDecoration(
                               color: Colors.greenAccent,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text('SCANNING'),
+                        ],
+                      ),
+                    )
+                  else
+                    ShadBadge(
+                      backgroundColor: Colors.grey,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: Colors.redAccent,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -258,20 +290,20 @@ class _ConnectScreenState extends State<ConnectScreen> {
               const SizedBox(height: 24),
 
               // Footer
-              Center(
-                child: Column(
-                  children: [
-                    Text(
-                      'SECURE ENCRYPTED WEBSOCKET CONNECTION',
-                      style: theme.textTheme.muted.copyWith(fontSize: 10),
-                    ),
-                    Text(
-                      'v1.4.2 stable',
-                      style: theme.textTheme.muted.copyWith(fontSize: 10),
-                    ),
-                  ],
-                ),
-              ),
+              // Center(
+              //   child: Column(
+              //     children: [
+              //       Text(
+              //         'SECURE ENCRYPTED WEBSOCKET CONNECTION',
+              //         style: theme.textTheme.muted.copyWith(fontSize: 10),
+              //       ),
+              //       Text(
+              //         'v1.4.2 stable',
+              //         style: theme.textTheme.muted.copyWith(fontSize: 10),
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         ),
