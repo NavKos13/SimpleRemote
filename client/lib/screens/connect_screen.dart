@@ -54,6 +54,8 @@ class _ConnectScreenState extends State<ConnectScreen> {
   }
 
   Future<void> _connectToServer(String ip, int port) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+
     if (_discovery != null) await _safeStopDiscovery();
 
     final udpService = UdpService(hostIp: ip, port: port);
@@ -155,201 +157,211 @@ class _ConnectScreenState extends State<ConnectScreen> {
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withAlpha(50),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: theme.colorScheme.primary),
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(50),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          child: Icon(
+                            LucideIcons.smartphoneNfc,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                        child: Icon(
-                          LucideIcons.smartphoneNfc,
-                          color: theme.colorScheme.primary,
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('SimpleRemote', style: theme.textTheme.h4),
+                            // Text(
+                            //   'Desktop Link',
+                            //   style: theme.textTheme.small.copyWith(
+                            //     color: theme.colorScheme.secondary,
+                            //     fontSize: 10,
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    if (_isScanning)
+                      ShadBadge.secondary(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: Colors.greenAccent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text('SCANNING'),
+                          ],
+                        ),
+                      )
+                    else
+                      ShadBadge(
+                        backgroundColor: Colors.grey,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: Colors.redAccent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text('SCANNING'),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  ],
+                ),
+                const SizedBox(height: 32),
+                // Device List section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'DETECTED COMPUTERS',
+                      style: theme.textTheme.muted.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${_discoveredDevices.length} Found',
+                      style: theme.textTheme.muted,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        _discoveredDevices.clear();
+                        _isScanning = false;
+                      });
+                      await _safeStopDiscovery();
+
+                      await _startNetworkScan();
+
+                      await Future.delayed(const Duration(milliseconds: 1000));
+                    },
+                    child: _discoveredDevices.isEmpty
+                        ? LayoutBuilder(
+                            builder: (context, constraints) =>
+                                SingleChildScrollView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: constraints.maxHeight,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'Searching for local servers...',
+                                        style: theme.textTheme.muted,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          )
+                        : ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: _discoveredDevices.length,
+                            itemBuilder: (context, index) {
+                              return _buildDeviceCard(
+                                _discoveredDevices[index],
+                                theme,
+                              );
+                            },
+                          ),
+                  ),
+                  // child: _discoveredDevices.isEmpty
+                  //     ? Center(
+                  //         child: Text(
+                  //           'Searching for local servers...',
+                  //           style: theme.textTheme.muted,
+                  //         ),
+                  //       )
+                  //     : ListView.builder(
+                  //         itemCount: _discoveredDevices.length,
+                  //         itemBuilder: (context, index) {
+                  //           return _buildDeviceCard(
+                  //             _discoveredDevices[index],
+                  //             theme,
+                  //           );
+                  //         },
+                  //       ),
+                ),
+                // Manual Ip section
+                const SizedBox(height: 16),
+                ShadCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Connect via IP Address',
+                        style: theme.textTheme.small.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
                         children: [
-                          Text('SimpleRemote', style: theme.textTheme.h4),
-                          // Text(
-                          //   'Desktop Link',
-                          //   style: theme.textTheme.small.copyWith(
-                          //     color: theme.colorScheme.secondary,
-                          //     fontSize: 10,
-                          //   ),
-                          // ),
+                          Expanded(
+                            child: ShadInput(
+                              controller: _ipController,
+                              placeholder: const Text('192.168.1.'),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ShadIconButton(
+                            icon: Icon(LucideIcons.moveRight),
+                            onPressed: () {
+                              if (_ipController.text.isNotEmpty) {
+                                _connectToServer(
+                                  _ipController.text.trim(),
+                                  8080,
+                                );
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ],
                   ),
-                  if (_isScanning)
-                    ShadBadge.secondary(
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: Colors.greenAccent,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text('SCANNING'),
-                        ],
-                      ),
-                    )
-                  else
-                    ShadBadge(
-                      backgroundColor: Colors.grey,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: Colors.redAccent,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text('SCANNING'),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              // Device List section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'DETECTED COMPUTERS',
-                    style: theme.textTheme.muted.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${_discoveredDevices.length} Found',
-                    style: theme.textTheme.muted,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    setState(() {
-                      _discoveredDevices.clear();
-                      _isScanning = false;
-                    });
-                    await _safeStopDiscovery();
-
-                    await _startNetworkScan();
-
-                    await Future.delayed(const Duration(milliseconds: 1000));
-                  },
-                  child: _discoveredDevices.isEmpty
-                      ? LayoutBuilder(
-                          builder: (context, constraints) =>
-                              SingleChildScrollView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    minHeight: constraints.maxHeight,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'Searching for local servers...',
-                                      style: theme.textTheme.muted,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                        )
-                      : ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: _discoveredDevices.length,
-                          itemBuilder: (context, index) {
-                            return _buildDeviceCard(
-                              _discoveredDevices[index],
-                              theme,
-                            );
-                          },
-                        ),
                 ),
-                // child: _discoveredDevices.isEmpty
-                //     ? Center(
-                //         child: Text(
-                //           'Searching for local servers...',
-                //           style: theme.textTheme.muted,
-                //         ),
-                //       )
-                //     : ListView.builder(
-                //         itemCount: _discoveredDevices.length,
-                //         itemBuilder: (context, index) {
-                //           return _buildDeviceCard(
-                //             _discoveredDevices[index],
-                //             theme,
-                //           );
-                //         },
-                //       ),
-              ),
-              // Manual Ip section
-              const SizedBox(height: 16),
-              ShadCard(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Connect via IP Address',
-                      style: theme.textTheme.small.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ShadInput(
-                            controller: _ipController,
-                            placeholder: const Text('192.168.1.'),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        ShadIconButton(
-                          icon: Icon(LucideIcons.moveRight),
-                          onPressed: () {
-                            if (_ipController.text.isNotEmpty) {
-                              _connectToServer(_ipController.text.trim(), 8080);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),

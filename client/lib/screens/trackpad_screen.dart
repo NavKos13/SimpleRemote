@@ -62,7 +62,7 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
         ),
         persistentFooterButtons: [
           ShadIconButton(
-            icon: Icon(Icons.keyboard),
+            icon: Icon(LucideIcons.keyboard),
             onPressed: _openKeyboardSheet,
           ),
         ],
