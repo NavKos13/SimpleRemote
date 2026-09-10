@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:client/controllers/settings_controller.dart';
 import 'package:client/services/tcp_service.dart';
 import 'package:nsd/nsd.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,9 @@ import 'trackpad_screen.dart';
 const String serviceTypeDiscover = '_simpleremote._udp';
 
 class ConnectScreen extends StatefulWidget {
-  const ConnectScreen({super.key});
+  const ConnectScreen({super.key, required this.settingsController});
+
+  final SettingsController settingsController;
 
   @override
   State<StatefulWidget> createState() => _ConnectScreenState();
@@ -73,8 +76,11 @@ class _ConnectScreenState extends State<ConnectScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            TrackpadScreen(udpService: udpService, tcpService: tcpService),
+        builder: (context) => TrackpadScreen(
+          udpService: udpService,
+          tcpService: tcpService,
+          settingsController: widget.settingsController,
+        ),
       ),
     );
   }
