@@ -32,27 +32,37 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
   }
 
   @override
+  void dispose() {
+    widget.tcpService.disconnect();
+    widget.udpService.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14.0, 0.0, 14.0, 14.0),
+      padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 10.0),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'SimpleRemote',
-            style: TextStyle(
-              fontFamily: 'FiraSans',
-              fontWeight: FontWeight.w600,
-            ),
+          leadingWidth: 36,
+          titleSpacing: 12,
+          leading: ShadIconButton.ghost(
+            icon: Icon(LucideIcons.chevronLeft300),
+            iconSize: 36,
+            onPressed: () async {
+              await widget.tcpService.disconnect();
+              widget.udpService.dispose();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
           ),
+          title: Text('SimpleRemote', style: theme.textTheme.h2),
         ),
-        // floatingActionButton: ShadIconButton(
-        //   icon: Icon(Icons.keyboard),
-        //   onPressed: _openKeyboardSheet,
-        // ),
         persistentFooterButtons: [
           ShadIconButton(
-            icon: Icon(Icons.keyboard),
+            icon: Icon(LucideIcons.keyboard),
             onPressed: _openKeyboardSheet,
           ),
         ],
@@ -76,13 +86,13 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
               ),
               const SizedBox(height: 16),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    'Sensitivity',
-                    style: theme.textTheme.muted.copyWith(fontSize: 12),
+                    'Sensitivity:',
+                    style: theme.textTheme.small.copyWith(fontSize: 12),
                   ),
+                  SizedBox(width: 6),
                   Text(
                     _sensitivity.toStringAsFixed(1),
                     style: theme.textTheme.small.copyWith(
@@ -101,15 +111,6 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                 },
               ),
               const SizedBox(height: 10.0),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.center,
-              //   children: [
-              //     ShadIconButton(
-              //       icon: Icon(Icons.keyboard),
-              //       onPressed: _openKeyboardSheet,
-              //     ),
-              //   ],
-              // ),
             ],
           ),
         ),
