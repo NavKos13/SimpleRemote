@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:client/services/tcp_service.dart';
 import 'package:nsd/nsd.dart';
 import 'package:flutter/material.dart';
@@ -58,7 +60,12 @@ class _ConnectScreenState extends State<ConnectScreen> {
     await udpService.init();
 
     final tcpService = TcpService(hostIp: ip, port: port);
-    await tcpService.connect();
+    try {
+      await tcpService.connect();
+    } catch (e) {
+      udpService.dispose();
+      rethrow;
+    }
 
     if (!mounted) return;
     await Navigator.push(
@@ -124,7 +131,20 @@ class _ConnectScreenState extends State<ConnectScreen> {
           ShadButton(
             size: ShadButtonSize.sm,
             child: const Text('CONNECT'),
-            onPressed: () => _connectToServer(ip, port),
+            onPressed: () async {
+              try {
+                await _connectToServer(ip, port);
+              } on SocketException catch (e) {
+                if (!context.mounted) return;
+
+                ShadToaster.of(context).show(
+                  ShadToast.destructive(
+                    title: const Text("Couldn't connect to server..."),
+                    description: Text('Error: $e'),
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
@@ -231,22 +251,63 @@ class _ConnectScreenState extends State<ConnectScreen> {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: _discoveredDevices.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Searching for local servers...',
-                          style: theme.textTheme.muted,
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() {
+                      _discoveredDevices.clear();
+                      _isScanning = false;
+                    });
+                    await _safeStopDiscovery();
+
+                    await _startNetworkScan();
+
+                    await Future.delayed(const Duration(milliseconds: 1000));
+                  },
+                  child: _discoveredDevices.isEmpty
+                      ? LayoutBuilder(
+                          builder: (context, constraints) =>
+                              SingleChildScrollView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Searching for local servers...',
+                                      style: theme.textTheme.muted,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                        )
+                      : ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: _discoveredDevices.length,
+                          itemBuilder: (context, index) {
+                            return _buildDeviceCard(
+                              _discoveredDevices[index],
+                              theme,
+                            );
+                          },
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: _discoveredDevices.length,
-                        itemBuilder: (context, index) {
-                          return _buildDeviceCard(
-                            _discoveredDevices[index],
-                            theme,
-                          );
-                        },
-                      ),
+                ),
+                // child: _discoveredDevices.isEmpty
+                //     ? Center(
+                //         child: Text(
+                //           'Searching for local servers...',
+                //           style: theme.textTheme.muted,
+                //         ),
+                //       )
+                //     : ListView.builder(
+                //         itemCount: _discoveredDevices.length,
+                //         itemBuilder: (context, index) {
+                //           return _buildDeviceCard(
+                //             _discoveredDevices[index],
+                //             theme,
+                //           );
+                //         },
+                //       ),
               ),
               // Manual Ip section
               const SizedBox(height: 16),
@@ -288,22 +349,6 @@ class _ConnectScreenState extends State<ConnectScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Footer
-              // Center(
-              //   child: Column(
-              //     children: [
-              //       Text(
-              //         'SECURE ENCRYPTED WEBSOCKET CONNECTION',
-              //         style: theme.textTheme.muted.copyWith(fontSize: 10),
-              //       ),
-              //       Text(
-              //         'v1.4.2 stable',
-              //         style: theme.textTheme.muted.copyWith(fontSize: 10),
-              //       ),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
         ),
@@ -311,53 +356,3 @@ class _ConnectScreenState extends State<ConnectScreen> {
     );
   }
 }
-
-    // return Padding(
-    //   padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 14.0),
-    //   child: Scaffold(
-    //     appBar: AppBar(
-    //       title: Text(
-    //         'SimpleRemote',
-    //         style: ShadTheme.of(context).textTheme.h3,
-    //       ),
-    //       leading: Padding(
-    //         padding: const EdgeInsets.all(6.0),
-    //         child: ShadIconButton(icon: Icon(LucideIcons.rocket)),
-    //       ),
-    //       actions: [
-    //         ShadIconButton.ghost(
-    //           icon: Icon(Icons.settings),
-    //           onPressed: () {
-    //             // TODO: handle settings screen
-    //             // Navigator.of(context).push
-    //           },
-    //         ),
-    //       ],
-    //     ),
-    //     body: Sliver(
-    //       child: Column(
-
-    //       ),
-    //     ),
-    //   ),
-    // );
-    // return Scaffold(
-    //   body: Center(
-    //     child: Column(
-    //       mainAxisAlignment: MainAxisAlignment.center,
-    //       children: [
-    //         ShadIconButton(
-    //           icon: SizedBox.square(
-    //             dimension: 16,
-    //             child: CircularProgressIndicator(
-    //               strokeWidth: 2,
-    //               color: ShadTheme.of(context).colorScheme.primaryForeground,
-    //             ),
-    //           ),
-    //         ),
-    //         const SizedBox(height: 20),
-    //         Text(_status, style: const TextStyle(color: Colors.white70)),
-    //       ],
-    //     ),
-    //   ),
-    // );
