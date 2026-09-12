@@ -68,7 +68,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
-    
     ShadThemeData theme = ShadTheme.of(context);
     ShadBorder cardBorder = ShadBorder.all(
       color: theme.colorScheme.primaryForeground,
@@ -162,7 +161,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailingWidget: SizedBox(
                       width: 110,
                       child: ShadSelect<ThemeMode>(
-                        initialValue: ThemeMode.dark,
+                        initialValue: widget.settingsController.themeMode,
                         options: [
                           ...themes.entries.map(
                             (e) =>
