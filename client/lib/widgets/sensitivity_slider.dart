@@ -1,14 +1,19 @@
+import 'package:client/controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 class SensitivitySlider extends StatelessWidget {
   final double currentValue;
   final ValueChanged<double> onChanged;
+  final ValueChanged<double> onChangeEnd;
+  final SettingsController settingsController;
 
   const SensitivitySlider({
     super.key,
     required this.currentValue,
     required this.onChanged,
+    required this.onChangeEnd,
+    required this.settingsController,
   });
 
   @override
@@ -28,19 +33,8 @@ class SensitivitySlider extends StatelessWidget {
         min: 0,
         max: 10.0,
         onChanged: onChanged,
+        onChangeEnd: onChangeEnd,
       ),
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return ShadSlider(
-  //     initialValue: currentValue,
-  //     min: 1.0,
-  //     max: 10.0,
-  //     onChanged: onChanged,
-  //     thumbRadius: 15.0,
-  //     trackHeight: 10.0,
-  //   );
-  // }
 }

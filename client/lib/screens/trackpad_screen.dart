@@ -26,8 +26,6 @@ class TrackpadScreen extends StatefulWidget {
 }
 
 class _TrackpadScreenState extends State<TrackpadScreen> {
-  double _sensitivity = 2.0;
-
   void _openKeyboardSheet() {
     showShadSheet(
       side: ShadSheetSide.bottom,
@@ -99,7 +97,8 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                   builder: (context, child) {
                     return TrackpadWidget(
                       udpService: widget.udpService,
-                      sensitivity: _sensitivity,
+                      sensitivity:
+                          widget.settingsController.trackpadSensitivity,
                       naturalScrolling:
                           widget.settingsController.naturalScrolling,
                       hapticsEnabled: widget.settingsController.hapticsEnabled,
@@ -114,29 +113,45 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                 radius: BorderRadius.all(Radius.circular(4)),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'Sensitivity:',
-                    style: theme.textTheme.small.copyWith(fontSize: 12),
-                  ),
-                  SizedBox(width: 6),
-                  Text(
-                    _sensitivity.toStringAsFixed(1),
-                    style: theme.textTheme.small.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.0),
-              SensitivitySlider(
-                currentValue: _sensitivity,
-                onChanged: (newValue) {
-                  setState(() {
-                    _sensitivity = newValue;
-                  });
+              ListenableBuilder(
+                listenable: widget.settingsController,
+                builder: (context, child) {
+                  final currentSensitivity =
+                      widget.settingsController.trackpadSensitivity;
+                  return Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sensitivity:',
+                            style: theme.textTheme.small.copyWith(fontSize: 12),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            currentSensitivity.toStringAsFixed(1),
+                            style: theme.textTheme.small.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10.0),
+                      SensitivitySlider(
+                        settingsController: widget.settingsController,
+                        currentValue: currentSensitivity,
+                        onChanged: (newValue) {
+                          widget.settingsController.trackpadSensitivity =
+                              newValue;
+                        },
+                        onChangeEnd: (newValue) {
+                          widget.settingsController.persistTrackpadSensitivity(
+                            newValue,
+                          );
+                        },
+                      ),
+                    ],
+                  );
                 },
               ),
               const SizedBox(height: 10.0),

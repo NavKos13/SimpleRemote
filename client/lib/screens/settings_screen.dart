@@ -1,4 +1,5 @@
 import 'package:client/controllers/settings_controller.dart';
+import 'package:client/widgets/sensitivity_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -128,6 +129,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           widget.settingsController.toggleHapticsEnabled(v),
                     ),
                   ),
+                  // Divider(
+                  //   height: 1,
+                  //   color: theme.colorScheme.border.withValues(alpha: 0.2),
+                  // ),
+                  // _SettingsTile(
+                  //   title: 'Trackpad Sensitivity',
+                  //   description: 'Control mouse movement sensitivity',
+                  //   trailingWidget: SensitivitySlider(),
+                  // )
                 ],
               ),
             ),
