@@ -52,6 +52,36 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
     widget.udpService.sendRemoteCommand(command);
   }
 
+  void _sendScroll(
+    ScaleUpdateDetails details,
+    double scrollAccumulatorX,
+    double scrollAccumulatorY,
+  ) {
+    switch (widget.naturalScrolling) {
+      case true:
+        _scrollAccumulatorX += details.focalPointDelta.dx * _scrollSensitivity;
+        _scrollAccumulatorY += details.focalPointDelta.dy * _scrollSensitivity;
+      case false:
+        _scrollAccumulatorX += -details.focalPointDelta.dx * _scrollSensitivity;
+        _scrollAccumulatorY += -details.focalPointDelta.dy * _scrollSensitivity;
+    }
+
+    final int stepX = _scrollAccumulatorX.truncate();
+    final int stepY = _scrollAccumulatorY.truncate();
+
+    if (stepX != 0 || stepY != 0) {
+      _scrollAccumulatorX -= stepX;
+      _scrollAccumulatorY -= stepY;
+
+      widget.udpService.sendRemoteCommand(
+        MouseScrollCommand(
+          scrollX: stepX.toDouble(),
+          scrollY: stepY.toDouble(),
+        ),
+      );
+    }
+  }
+
   void _triggerLightHapticFeedback() {
     if (widget.hapticsEnabled) HapticFeedback.lightImpact();
   }
@@ -111,25 +141,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
                 MouseMoveCommand(dx: dx, dy: dy),
               );
             } else if (details.pointerCount == 2) {
-              _scrollAccumulatorX +=
-                  -details.focalPointDelta.dx * _scrollSensitivity;
-              _scrollAccumulatorY +=
-                  -details.focalPointDelta.dy * _scrollSensitivity;
-
-              final int stepX = _scrollAccumulatorX.truncate();
-              final int stepY = _scrollAccumulatorY.truncate();
-
-              if (stepX != 0 || stepY != 0) {
-                _scrollAccumulatorX -= stepX;
-                _scrollAccumulatorY -= stepY;
-
-                widget.udpService.sendRemoteCommand(
-                  MouseScrollCommand(
-                    scrollX: stepX.toDouble(),
-                    scrollY: stepY.toDouble(),
-                  ),
-                );
-              }
+              _sendScroll(details, _scrollAccumulatorX, _scrollAccumulatorY);
             }
           },
 
