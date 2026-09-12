@@ -24,6 +24,8 @@ class SettingsController extends ChangeNotifier {
         _themeMode = ThemeMode.light;
       case 'dark':
         _themeMode = ThemeMode.dark;
+      case 'system':
+        _themeMode = ThemeMode.system;
       default:
         _themeMode = ThemeMode.dark;
     }
@@ -35,17 +37,20 @@ class SettingsController extends ChangeNotifier {
     _naturalScrolling = value;
     await _prefs.setBool('naturalScrolling', value);
     notifyListeners();
+    print('Natural scrolling toggled to $value');
   }
 
   Future<void> toggleHapticsEnabled(bool value) async {
     _hapticsEnabled = value;
     await _prefs.setBool('hapticsEnabled', value);
     notifyListeners();
+    print('Haptic feedback toggled to $value');
   }
 
   Future<void> updateThemeMode(ThemeMode mode) async {
     _themeMode = mode;
     await _prefs.setString('themeMode', mode.name);
     notifyListeners();
+    print('Theme mode changed to $mode');
   }
 }

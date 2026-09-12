@@ -46,49 +46,50 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 10.0),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('SimpleRemote', style: theme.textTheme.h2),
-          titleSpacing: 12,
-          leading: ShadIconButton.ghost(
-            icon: Icon(LucideIcons.chevronLeft300),
-            iconSize: 36,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SimpleRemote', style: theme.textTheme.h2),
+        titleSpacing: 12,
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 10),
+        leading: ShadIconButton.ghost(
+          icon: Icon(LucideIcons.chevronLeft300),
+          iconSize: 36,
+          onPressed: () async {
+            await widget.tcpService.disconnect();
+            widget.udpService.dispose();
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          },
+        ),
+        leadingWidth: 36,
+        actions: [
+          ShadIconButton.ghost(
+            icon: Icon(LucideIcons.settings),
             onPressed: () async {
-              await widget.tcpService.disconnect();
-              widget.udpService.dispose();
-              if (context.mounted) {
-                Navigator.of(context).pop();
-              }
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SettingsScreen(
+                    settingsController: widget.settingsController,
+                  ),
+                ),
+              );
             },
           ),
-          leadingWidth: 36,
-          actions: [
-            ShadIconButton.ghost(
-              icon: Icon(LucideIcons.settings),
-              onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SettingsScreen(
-                      settingsController: widget.settingsController,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        persistentFooterButtons: [
-          ShadIconButton(
-            icon: Icon(LucideIcons.keyboard),
-            onPressed: _openKeyboardSheet,
-          ),
         ],
-        persistentFooterAlignment: AlignmentDirectional.topCenter,
-        persistentFooterDecoration: BoxDecoration(),
-        body: SafeArea(
+      ),
+      persistentFooterButtons: [
+        ShadIconButton(
+          icon: Icon(LucideIcons.keyboard),
+          onPressed: _openKeyboardSheet,
+        ),
+      ],
+      persistentFooterAlignment: AlignmentDirectional.topCenter,
+      persistentFooterDecoration: BoxDecoration(),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 10.0),
+        child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
