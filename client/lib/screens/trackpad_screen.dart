@@ -94,9 +94,17 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
-                child: TrackpadWidget(
-                  udpService: widget.udpService,
-                  sensitivity: _sensitivity,
+                child: ListenableBuilder(
+                  listenable: widget.settingsController,
+                  builder: (context, child) {
+                    return TrackpadWidget(
+                      udpService: widget.udpService,
+                      sensitivity: _sensitivity,
+                      naturalScrolling:
+                          widget.settingsController.naturalScrolling,
+                      hapticsEnabled: widget.settingsController.hapticsEnabled,
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 16),
