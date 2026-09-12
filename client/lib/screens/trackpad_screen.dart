@@ -1,3 +1,5 @@
+import 'package:client/controllers/settings_controller.dart';
+import 'package:client/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -8,21 +10,22 @@ import '../widgets/sensitivity_slider.dart';
 import '../widgets/trackpad.dart';
 
 class TrackpadScreen extends StatefulWidget {
-  final UdpService udpService;
-  final TcpService tcpService;
   const TrackpadScreen({
     super.key,
     required this.udpService,
     required this.tcpService,
+    required this.settingsController,
   });
+
+  final UdpService udpService;
+  final TcpService tcpService;
+  final SettingsController settingsController;
 
   @override
   State<TrackpadScreen> createState() => _TrackpadScreenState();
 }
 
 class _TrackpadScreenState extends State<TrackpadScreen> {
-  double _sensitivity = 2.0;
-
   void _openKeyboardSheet() {
     showShadSheet(
       side: ShadSheetSide.bottom,
@@ -41,41 +44,66 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 10.0),
-      child: Scaffold(
-        appBar: AppBar(
-          leadingWidth: 36,
-          titleSpacing: 12,
-          leading: ShadIconButton.ghost(
-            icon: Icon(LucideIcons.chevronLeft300),
-            iconSize: 36,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SimpleRemote', style: theme.textTheme.h2),
+        titleSpacing: 12,
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 10),
+        leading: ShadIconButton.ghost(
+          icon: Icon(LucideIcons.chevronLeft300),
+          iconSize: 36,
+          onPressed: () async {
+            await widget.tcpService.disconnect();
+            widget.udpService.dispose();
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          },
+        ),
+        leadingWidth: 36,
+        actions: [
+          ShadIconButton.ghost(
+            icon: Icon(LucideIcons.settings),
             onPressed: () async {
-              await widget.tcpService.disconnect();
-              widget.udpService.dispose();
-              if (context.mounted) {
-                Navigator.of(context).pop();
-              }
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SettingsScreen(
+                    settingsController: widget.settingsController,
+                  ),
+                ),
+              );
             },
           ),
-          title: Text('SimpleRemote', style: theme.textTheme.h2),
-        ),
-        persistentFooterButtons: [
-          ShadIconButton(
-            icon: Icon(LucideIcons.keyboard),
-            onPressed: _openKeyboardSheet,
-          ),
         ],
-        persistentFooterAlignment: AlignmentDirectional.topCenter,
-        persistentFooterDecoration: BoxDecoration(),
-        body: SafeArea(
+      ),
+      persistentFooterButtons: [
+        ShadIconButton(
+          icon: Icon(LucideIcons.keyboard),
+          onPressed: _openKeyboardSheet,
+        ),
+      ],
+      persistentFooterAlignment: AlignmentDirectional.topCenter,
+      persistentFooterDecoration: BoxDecoration(),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 10.0),
+        child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
-                child: TrackpadWidget(
-                  udpService: widget.udpService,
-                  sensitivity: _sensitivity,
+                child: ListenableBuilder(
+                  listenable: widget.settingsController,
+                  builder: (context, child) {
+                    return TrackpadWidget(
+                      udpService: widget.udpService,
+                      sensitivity:
+                          widget.settingsController.trackpadSensitivity,
+                      naturalScrolling:
+                          widget.settingsController.naturalScrolling,
+                      hapticsEnabled: widget.settingsController.hapticsEnabled,
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 16),
@@ -85,29 +113,45 @@ class _TrackpadScreenState extends State<TrackpadScreen> {
                 radius: BorderRadius.all(Radius.circular(4)),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'Sensitivity:',
-                    style: theme.textTheme.small.copyWith(fontSize: 12),
-                  ),
-                  SizedBox(width: 6),
-                  Text(
-                    _sensitivity.toStringAsFixed(1),
-                    style: theme.textTheme.small.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.0),
-              SensitivitySlider(
-                currentValue: _sensitivity,
-                onChanged: (newValue) {
-                  setState(() {
-                    _sensitivity = newValue;
-                  });
+              ListenableBuilder(
+                listenable: widget.settingsController,
+                builder: (context, child) {
+                  final currentSensitivity =
+                      widget.settingsController.trackpadSensitivity;
+                  return Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sensitivity:',
+                            style: theme.textTheme.small.copyWith(fontSize: 12),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            currentSensitivity.toStringAsFixed(1),
+                            style: theme.textTheme.small.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10.0),
+                      SensitivitySlider(
+                        settingsController: widget.settingsController,
+                        currentValue: currentSensitivity,
+                        onChanged: (newValue) {
+                          widget.settingsController.trackpadSensitivity =
+                              newValue;
+                        },
+                        onChangeEnd: (newValue) {
+                          widget.settingsController.persistTrackpadSensitivity(
+                            newValue,
+                          );
+                        },
+                      ),
+                    ],
+                  );
                 },
               ),
               const SizedBox(height: 10.0),

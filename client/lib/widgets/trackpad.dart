@@ -7,11 +7,15 @@ import 'package:shadcn_ui/shadcn_ui.dart' hide Direction;
 
 class TrackpadWidget extends StatefulWidget {
   final UdpService udpService;
+  final bool naturalScrolling;
+  final bool hapticsEnabled;
   final double sensitivity;
 
   const TrackpadWidget({
     super.key,
     required this.udpService,
+    required this.naturalScrolling,
+    required this.hapticsEnabled,
     required this.sensitivity,
   });
 
@@ -20,12 +24,13 @@ class TrackpadWidget extends StatefulWidget {
 }
 
 class _TrackpadWidgetState extends State<TrackpadWidget> {
+  static const double _scrollSensitivity = 0.08;
+
   int _pointerCount = 0;
   bool _twoFingerTapCandidate = false;
   bool _longPress = false;
   double _scrollAccumulatorX = 0.0;
   double _scrollAccumulatorY = 0.0;
-  static const double _scrollSensitivity = 0.08;
 
   void _sendRightClick() {
     debugPrint('Right click detected (two-finger tap)');
@@ -47,6 +52,44 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
     widget.udpService.sendRemoteCommand(command);
   }
 
+  void _sendScroll(
+    ScaleUpdateDetails details,
+    double scrollAccumulatorX,
+    double scrollAccumulatorY,
+  ) {
+    switch (widget.naturalScrolling) {
+      case true:
+        _scrollAccumulatorX += details.focalPointDelta.dx * _scrollSensitivity;
+        _scrollAccumulatorY += details.focalPointDelta.dy * _scrollSensitivity;
+      case false:
+        _scrollAccumulatorX += -details.focalPointDelta.dx * _scrollSensitivity;
+        _scrollAccumulatorY += -details.focalPointDelta.dy * _scrollSensitivity;
+    }
+
+    final int stepX = _scrollAccumulatorX.truncate();
+    final int stepY = _scrollAccumulatorY.truncate();
+
+    if (stepX != 0 || stepY != 0) {
+      _scrollAccumulatorX -= stepX;
+      _scrollAccumulatorY -= stepY;
+
+      widget.udpService.sendRemoteCommand(
+        MouseScrollCommand(
+          scrollX: stepX.toDouble(),
+          scrollY: stepY.toDouble(),
+        ),
+      );
+    }
+  }
+
+  void _triggerLightHapticFeedback() {
+    if (widget.hapticsEnabled) HapticFeedback.lightImpact();
+  }
+
+  void _triggerHeavyHapticFeedback() {
+    if (widget.hapticsEnabled) HapticFeedback.heavyImpact();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
@@ -65,7 +108,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
 
         if (_twoFingerTapCandidate && _pointerCount == 0) {
           _twoFingerTapCandidate = false;
-          HapticFeedback.lightImpact();
+          _triggerLightHapticFeedback();
           _sendRightClick();
         }
       },
@@ -98,30 +141,12 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
                 MouseMoveCommand(dx: dx, dy: dy),
               );
             } else if (details.pointerCount == 2) {
-              _scrollAccumulatorX +=
-                  -details.focalPointDelta.dx * _scrollSensitivity;
-              _scrollAccumulatorY +=
-                  -details.focalPointDelta.dy * _scrollSensitivity;
-
-              final int stepX = _scrollAccumulatorX.truncate();
-              final int stepY = _scrollAccumulatorY.truncate();
-
-              if (stepX != 0 || stepY != 0) {
-                _scrollAccumulatorX -= stepX;
-                _scrollAccumulatorY -= stepY;
-
-                widget.udpService.sendRemoteCommand(
-                  MouseScrollCommand(
-                    scrollX: stepX.toDouble(),
-                    scrollY: stepY.toDouble(),
-                  ),
-                );
-              }
+              _sendScroll(details, _scrollAccumulatorX, _scrollAccumulatorY);
             }
           },
 
           onTap: () {
-            HapticFeedback.heavyImpact();
+            _triggerHeavyHapticFeedback();
 
             if (_longPress) {
               final RemoteCommand releaseCommand = MouseClickCommand(
@@ -137,7 +162,7 @@ class _TrackpadWidgetState extends State<TrackpadWidget> {
 
           onLongPress: () {
             _longPress = true;
-            HapticFeedback.lightImpact();
+            _triggerLightHapticFeedback();
 
             debugPrint('Long press detected');
             final RemoteCommand pressCommand = MouseClickCommand(
@@ -163,16 +188,6 @@ Tap once to release L-click
               ),
             ),
           ),
-          // Container(
-          //   width: double.infinity,
-          //   height: double.infinity,
-          //   margin: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0),
-          //   decoration: BoxDecoration(
-          //     color: Colors.grey[850],
-          //     borderRadius: BorderRadius.circular(12),
-          //     border: Border.all(color: Colors.blueAccent, width: 2),
-          //   ),
-          // ),
         ),
       ),
     );

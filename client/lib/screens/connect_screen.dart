@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:client/controllers/settings_controller.dart';
+import 'package:client/screens/settings_screen.dart';
 import 'package:client/services/tcp_service.dart';
 import 'package:nsd/nsd.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +12,9 @@ import 'trackpad_screen.dart';
 const String serviceTypeDiscover = '_simpleremote._udp';
 
 class ConnectScreen extends StatefulWidget {
-  const ConnectScreen({super.key});
+  const ConnectScreen({super.key, required this.settingsController});
+
+  final SettingsController settingsController;
 
   @override
   State<StatefulWidget> createState() => _ConnectScreenState();
@@ -19,8 +23,8 @@ class ConnectScreen extends StatefulWidget {
 class _ConnectScreenState extends State<ConnectScreen> {
   Discovery? _discovery;
   final List<Service> _discoveredDevices = [];
-  final TextEditingController _ipController = TextEditingController();
   bool _isScanning = false;
+  final TextEditingController _ipController = TextEditingController();
 
   @override
   void initState() {
@@ -72,9 +76,12 @@ class _ConnectScreenState extends State<ConnectScreen> {
     if (!mounted) return;
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) =>
-            TrackpadScreen(udpService: udpService, tcpService: tcpService),
+      ShadDialogRoute(
+        pageBuilder: (context) => TrackpadScreen(
+          udpService: udpService,
+          tcpService: tcpService,
+          settingsController: widget.settingsController,
+        ),
       ),
     );
   }
@@ -236,6 +243,18 @@ class _ConnectScreenState extends State<ConnectScreen> {
                           ],
                         ),
                       ),
+                    ShadIconButton.ghost(
+                      icon: Icon(LucideIcons.settings),
+                      onPressed: () async {
+                        await Navigator.of(context).push(
+                          ShadDialogRoute(
+                            pageBuilder: (context) => SettingsScreen(
+                              settingsController: widget.settingsController,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -299,22 +318,6 @@ class _ConnectScreenState extends State<ConnectScreen> {
                             },
                           ),
                   ),
-                  // child: _discoveredDevices.isEmpty
-                  //     ? Center(
-                  //         child: Text(
-                  //           'Searching for local servers...',
-                  //           style: theme.textTheme.muted,
-                  //         ),
-                  //       )
-                  //     : ListView.builder(
-                  //         itemCount: _discoveredDevices.length,
-                  //         itemBuilder: (context, index) {
-                  //           return _buildDeviceCard(
-                  //             _discoveredDevices[index],
-                  //             theme,
-                  //           );
-                  //         },
-                  //       ),
                 ),
                 // Manual Ip section
                 const SizedBox(height: 16),
