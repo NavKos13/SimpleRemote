@@ -1,18 +1,25 @@
+import 'package:client/controllers/settings_controller.dart';
 import 'package:client/screens/connect_screen.dart';
 import 'package:flutter/material.dart';
-import 'widgets/trackpad.dart';
-import 'services/udp_service.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 const String serverIp = "192.168.68.61";
 const int serverPort = 8080;
 
-void main() {
-  runApp(const SimpleRemoteApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final settingsController = SettingsController();
+  await settingsController.init();
+
+  runApp(SimpleRemoteApp(settingsController: settingsController));
 }
 
 class SimpleRemoteApp extends StatefulWidget {
-  const SimpleRemoteApp({super.key});
+  const SimpleRemoteApp({super.key, required this.settingsController});
 
+  final SettingsController settingsController;
   @override
   State<StatefulWidget> createState() => _SimpleRemoteAppState();
 }
@@ -20,57 +27,28 @@ class SimpleRemoteApp extends StatefulWidget {
 class _SimpleRemoteAppState extends State<SimpleRemoteApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SimpleRemote Client',
-      theme: ThemeData.dark(),
-      // home: TrackpadScreen(udpService: _udpService),
-      home: const ConnectScreen(),
+    final firaSansTextTheme = ShadTextTheme.fromGoogleFont(
+      GoogleFonts.firaSans,
     );
-  }
-}
-
-class TrackpadScreen extends StatefulWidget {
-  final UdpService udpService;
-  const TrackpadScreen({super.key, required this.udpService});
-
-  @override
-  State<TrackpadScreen> createState() => _TrackpadScreenState();
-}
-
-class _TrackpadScreenState extends State<TrackpadScreen> {
-  double _sensitivity = 2.0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'SimpleRemote',
-          style: TextStyle(fontFamily: 'FiraSans'),
-        ),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: TrackpadWidget(
-              udpService: widget.udpService,
-              sensitivity: _sensitivity,
-            ),
+    return ListenableBuilder(
+      listenable: widget.settingsController,
+      builder: (context, child) {
+        return ShadApp(
+          title: 'SimpleRemote Client',
+          theme: ShadThemeData(
+            brightness: Brightness.light,
+            colorScheme: const ShadGreenColorScheme.light(),
+            textTheme: firaSansTextTheme,
           ),
-          Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 16.0),
-            child: SensitivitySlider(
-              currentValue: _sensitivity,
-              onChanged: (newValue) {
-                setState(() {
-                  _sensitivity = newValue;
-                });
-              },
-            ),
+          darkTheme: ShadThemeData(
+            brightness: Brightness.dark,
+            colorScheme: const ShadGreenColorScheme.dark(),
+            textTheme: firaSansTextTheme,
           ),
-        ],
-      ),
+          themeMode: widget.settingsController.themeMode,
+          home: ConnectScreen(settingsController: widget.settingsController),
+        );
+      },
     );
   }
 }

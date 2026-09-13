@@ -23,14 +23,41 @@ impl InputExecutor {
                     eprintln!("Could not process mouse click command: {err}")
                 });
             }
-            RemoteCommand::KeyPress { key, direction } => {
-                self.enigo
-                    .key(key, direction)
-                    .unwrap_or_else(|err| eprintln!("Could not process key press command: {err}"));
-            }
             RemoteCommand::MouseScroll { dx, dy } => {
                 self.enigo.scroll(dy as i32, Axis::Vertical);
                 self.enigo.scroll(dx as i32, Axis::Horizontal);
+            }
+            RemoteCommand::SpecialKey { key, direction } => {
+                self.enigo
+                    .key(enigo::Key::from(key), direction)
+                    .unwrap_or_else(|err| {
+                        eprintln!("Could not process special key press command: {err}")
+                    });
+            }
+            RemoteCommand::TextInput { text } => {
+                if text.chars().count() == 1 {
+                    let c = text.chars().next().unwrap();
+
+                    // Check if the character is safe to use with modifier keys (eg. Ctrl+c, Alt+c)
+                    let is_base_key =
+                        c.is_ascii_lowercase() || c.is_ascii_digit() || "`-=[]\\;',./".contains(c);
+
+                    if is_base_key {
+                        self.enigo
+                            .key(enigo::Key::Unicode(c), enigo::Direction::Click)
+                            .unwrap_or_else(|err| {
+                                eprintln!("Could not process key press command: {err}")
+                            })
+                    } else {
+                        self.enigo.text(&text).unwrap_or_else(|err| {
+                            eprintln!("Could not process key press command: {err}")
+                        });
+                    }
+                } else {
+                    self.enigo.text(&text).unwrap_or_else(|err| {
+                        eprintln!("Could not process text input command: {err}")
+                    })
+                }
             }
         }
     }

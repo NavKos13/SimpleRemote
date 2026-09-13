@@ -25,3 +25,5 @@ Cargo.lock
 *.swo
 .DS_Store
 Thumbs.db
+client/lib/themes/
+client/*.png
