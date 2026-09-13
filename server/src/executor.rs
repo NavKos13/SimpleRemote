@@ -67,6 +67,14 @@ impl InputExecutor {
                 .enigo
                 .key(Key::VolumeDown, Direction::Click)
                 .unwrap_or_else(|err| eprintln!("Could not process volume down command: {err}")),
+            RemoteCommand::MediaPlayPause => self
+                .enigo
+                .key(Key::MediaPlayPause, Direction::Click)
+                .unwrap_or_else(|err| eprintln!("Could not process media command")),
+            RemoteCommand::MediaNextTrack => self
+                .enigo
+                .key(Key::MediaNextTrack, Direction::Click)
+                .unwrap_or_else(|err| eprintln!("Could not process media command")),
         }
     }
 }

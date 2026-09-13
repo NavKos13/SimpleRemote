@@ -25,6 +25,8 @@ pub enum RemoteCommand {
     },
     VolumeDown,
     VolumeUp,
+    MediaPlayPause,
+    MediaNextTrack,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
