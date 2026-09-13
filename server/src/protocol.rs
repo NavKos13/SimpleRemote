@@ -23,6 +23,8 @@ pub enum RemoteCommand {
         key: SpecialKey,
         direction: Direction,
     },
+    VolumeDown,
+    VolumeUp,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

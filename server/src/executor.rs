@@ -59,6 +59,14 @@ impl InputExecutor {
                     })
                 }
             }
+            RemoteCommand::VolumeUp => self
+                .enigo
+                .key(Key::VolumeUp, Direction::Click)
+                .unwrap_or_else(|err| eprintln!("Could not process volume up command: {err}")),
+            RemoteCommand::VolumeDown => self
+                .enigo
+                .key(Key::VolumeDown, Direction::Click)
+                .unwrap_or_else(|err| eprintln!("Could not process volume down command: {err}")),
         }
     }
 }
