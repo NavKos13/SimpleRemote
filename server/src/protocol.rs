@@ -1,4 +1,4 @@
-use enigo::{Button, Direction, Key};
+use enigo::{Button, Direction};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]

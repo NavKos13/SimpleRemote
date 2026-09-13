@@ -24,8 +24,8 @@ impl InputExecutor {
                 });
             }
             RemoteCommand::MouseScroll { dx, dy } => {
-                self.enigo.scroll(dy as i32, Axis::Vertical);
-                self.enigo.scroll(dx as i32, Axis::Horizontal);
+                let _ = self.enigo.scroll(dy as i32, Axis::Vertical);
+                let _ = self.enigo.scroll(dx as i32, Axis::Horizontal);
             }
             RemoteCommand::SpecialKey { key, direction } => {
                 self.enigo

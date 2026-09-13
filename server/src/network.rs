@@ -13,7 +13,7 @@ pub fn spawn_tcp_listener(bind_addr: &'static str, tx: Sender<RemoteCommand>) ->
     thread::spawn(move || {
         let listener = TcpListener::bind(bind_addr).expect("Tcp socket failed to bind to address.");
 
-        'listener_loop: for stream_result in listener.incoming() {
+        for stream_result in listener.incoming() {
             let stream = match stream_result {
                 Ok(s) => s,
                 Err(e) => {
@@ -27,7 +27,7 @@ pub fn spawn_tcp_listener(bind_addr: &'static str, tx: Sender<RemoteCommand>) ->
             let mut reader = BufReader::new(stream);
             let mut line = String::new();
 
-            'inner_loop: loop {
+            loop {
                 line.clear();
 
                 match reader.read_line(&mut line) {
@@ -68,11 +68,11 @@ pub fn spawn_udp_listener(bind_addr: &'static str, tx: Sender<RemoteCommand>) ->
 
         loop {
             match socket.recv_from(&mut buf) {
-                Ok((num_of_bytes, src_address)) => {
+                Ok((num_of_bytes, _src_address)) => {
                     if let Ok(message) = std::str::from_utf8(&buf[..num_of_bytes]) {
                         println!("{message}");
                         match serde_json::from_str::<RemoteCommand>(message) {
-                            Ok(command) => tx.send(command).unwrap_or_else(|err| {
+                            Ok(command) => tx.send(command).unwrap_or_else(|_| {
                                 eprintln!("Could not send command to main thread.");
                             }),
                             Err(e) => {
