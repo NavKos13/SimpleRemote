@@ -59,22 +59,36 @@ impl InputExecutor {
                     })
                 }
             }
-            RemoteCommand::VolumeUp => self
-                .enigo
-                .key(Key::VolumeUp, Direction::Click)
-                .unwrap_or_else(|err| eprintln!("Could not process volume up command: {err}")),
-            RemoteCommand::VolumeDown => self
-                .enigo
-                .key(Key::VolumeDown, Direction::Click)
-                .unwrap_or_else(|err| eprintln!("Could not process volume down command: {err}")),
-            RemoteCommand::MediaPlayPause => self
-                .enigo
-                .key(Key::MediaPlayPause, Direction::Click)
-                .unwrap_or_else(|err| eprintln!("Could not process media command")),
-            RemoteCommand::MediaNextTrack => self
-                .enigo
-                .key(Key::MediaNextTrack, Direction::Click)
-                .unwrap_or_else(|err| eprintln!("Could not process media command")),
+            RemoteCommand::VolumeControl { action } => match action.as_str() {
+                "volumeUp" => self
+                    .enigo
+                    .key(Key::VolumeUp, Direction::Click)
+                    .unwrap_or_else(|err| eprintln!("Could not process volume command: {err}")),
+                "volumeDown" => self
+                    .enigo
+                    .key(Key::VolumeDown, Direction::Click)
+                    .unwrap_or_else(|err| eprintln!("Could not process volume command: {err}")),
+                "volumeMute" => self
+                    .enigo
+                    .key(Key::VolumeMute, Direction::Click)
+                    .unwrap_or_else(|err| eprintln!("Could not process volume command: {err}")),
+                _ => {}
+            },
+            RemoteCommand::MediaControl { action } => match action.as_str() {
+                "mediaPlayPause" => self
+                    .enigo
+                    .key(Key::MediaPlayPause, Direction::Click)
+                    .unwrap_or_else(|err| eprintln!("Could not process media command: {err}")),
+                "mediaNextTrack" => self
+                    .enigo
+                    .key(Key::MediaNextTrack, Direction::Click)
+                    .unwrap_or_else(|err| eprintln!("Could not process media command: {err}")),
+                "mediaPrevTrack" => self
+                    .enigo
+                    .key(Key::MediaPrevTrack, Direction::Click)
+                    .unwrap_or_else(|err| eprintln!("Could not process media command: {err}")),
+                _ => {}
+            },
         }
     }
 }

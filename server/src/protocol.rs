@@ -23,10 +23,12 @@ pub enum RemoteCommand {
         key: SpecialKey,
         direction: Direction,
     },
-    VolumeDown,
-    VolumeUp,
-    MediaPlayPause,
-    MediaNextTrack,
+    VolumeControl {
+        action: String,
+    },
+    MediaControl {
+    	action: String
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -99,36 +101,4 @@ impl From<SpecialKey> for enigo::Key {
             SpecialKey::F12 => enigo::Key::F12,
         }
     }
-}
-
-pub fn print_command_examples() {
-    //     let mouse_move = RemoteCommand::MouseMove {
-    //         dx: 100.0,
-    //         dy: 100.0,
-    //     };
-
-    //     println!(
-    //         "Mouse move example: {}",
-    //         serde_json::to_string::<RemoteCommand>(&mouse_move).unwrap_or_default()
-    //     );
-
-    //     let mouse_click = RemoteCommand::MouseClick {
-    //         button: Button::Left,
-    //         direction: Direction::Click,
-    //     };
-
-    //     println!(
-    //         "Mouse click example: {}",
-    //         serde_json::to_string::<RemoteCommand>(&mouse_click).unwrap_or_default()
-    //     );
-
-    //     // let key_press = RemoteCommand::SpecialKey {
-    //     //     key: Key::Space,
-    //     //     direction: Direction::Click,
-    //     // };
-
-    //     println!(
-    //         "Key click example: {}",
-    //         serde_json::to_string::<RemoteCommand>(&key_press).unwrap_or_default()
-    //     )
 }
